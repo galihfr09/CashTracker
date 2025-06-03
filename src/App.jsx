@@ -34,10 +34,6 @@ function App() {
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Top Bar */}
           <header className="bg-white shadow-md p-4 flex justify-between items-center">
-            <div>
-              {/* Date range selector will go here */}
-              <span className="text-gray-600">Date Range: Last 30 Days</span>
-            </div>
             <button 
               onClick={() => setIsModalOpen(true)} 
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition duration-150 ease-in-out"

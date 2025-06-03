@@ -19,26 +19,17 @@ function DashboardPage() {
     if (!filteredTransactions || filteredTransactions.length === 0) {
       return {
         totalExpenses: 0,
-        totalIncome: 0,
-        netTotal: 0,
         transactionCount: 0,
       };
     }
 
     let expenses = 0;
-    let income = 0;
     filteredTransactions.forEach(t => {
-      if (t.amount < 0) {
-        expenses += Math.abs(t.amount);
-      } else {
-        income += t.amount;
-      }
+      expenses += Math.abs(t.amount);
     });
 
     return {
       totalExpenses: expenses,
-      totalIncome: income,
-      netTotal: income - expenses,
       transactionCount: filteredTransactions.length,
     };
   }, [filteredTransactions]);
@@ -115,20 +106,10 @@ function DashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-sm font-medium text-gray-500">Total Expenses</h3>
           <p className="text-3xl font-semibold text-red-600 mt-1">{formatCurrency(summaryStats.totalExpenses)}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-sm font-medium text-gray-500">Total Income</h3>
-          <p className="text-3xl font-semibold text-green-600 mt-1">{formatCurrency(summaryStats.totalIncome)}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-sm font-medium text-gray-500">Net Total</h3>
-          <p className={`text-3xl font-semibold ${summaryStats.netTotal >= 0 ? 'text-green-600' : 'text-red-600'} mt-1`}>
-            {formatCurrency(summaryStats.netTotal)}
-          </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-sm font-medium text-gray-500">Transaction Count</h3>
