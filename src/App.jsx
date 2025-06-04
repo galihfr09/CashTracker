@@ -1,18 +1,47 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import DashboardPage from './pages/DashboardPage';
 import TransactionsPage from './pages/TransactionsPage';
 import CategoriesPage from './pages/CategoriesPage';
-// import SettingsPage from './pages/SettingsPage'; // Optional
 import AddTransactionModal from './components/AddTransactionModal';
 import { PlusCircle } from 'lucide-react';
 import { DataContext } from './context/DataContext';
+import { supabase } from './supabaseClient';
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
 
 function App() {
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { addTransaction } = useContext(DataContext);
+  const [session, setSession] = useState(null);
 
-  // Removed useEffect for fetchTransactions as DataContext handles it
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (!session) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="w-full max-w-md p-8 space-y-4 bg-white rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold text-center text-gray-800">Welcome to Cash Tracker</h2>
+          <Auth
+            supabaseClient={supabase}
+            appearance={{ theme: ThemeSupa }}
+            providers={['google', 'github']}
+            redirectTo={window.location.origin}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router>
@@ -25,9 +54,14 @@ function App() {
               <li><NavLink to="/" className={({ isActive }) => `block py-2 px-3 rounded hover:bg-gray-700 ${isActive ? 'bg-gray-700' : ''}`}>Dashboard</NavLink></li>
               <li><NavLink to="/transactions" className={({ isActive }) => `block py-2 px-3 rounded hover:bg-gray-700 ${isActive ? 'bg-gray-700' : ''}`}>Transactions</NavLink></li>
               <li><NavLink to="/categories" className={({ isActive }) => `block py-2 px-3 rounded hover:bg-gray-700 ${isActive ? 'bg-gray-700' : ''}`}>Categories</NavLink></li>
-              {/* <li><NavLink to="/settings" className={({ isActive }) => `block py-2 px-3 rounded hover:bg-gray-700 ${isActive ? 'bg-gray-700' : ''}`}>Settings</NavLink></li> */}
             </ul>
           </nav>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="w-full py-2 px-3 rounded bg-red-600 hover:bg-red-700 text-white font-semibold transition duration-150 ease-in-out"
+          >
+            Sign Out
+          </button>
         </aside>
 
         {/* Main Content */}
@@ -49,7 +83,6 @@ function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
-              {/* <Route path="/settings" element={<SettingsPage />} /> */}
             </Routes>
           </div>
         </main>
@@ -57,7 +90,7 @@ function App() {
       <AddTransactionModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        onSave={addTransaction} // Pass the addTransaction function
+        onSave={addTransaction} 
       />
     </Router>
   );
